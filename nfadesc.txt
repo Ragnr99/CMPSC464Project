@@ -1,0 +1,14 @@
+ab
+3
+q1
+q2
+q3
+q1
+1
+q1
+5
+q1,q2,a
+q2,q1,b
+q1,q2,b
+q1,q3,EPSILON
+q1,q1,a
