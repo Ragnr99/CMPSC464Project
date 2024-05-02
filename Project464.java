@@ -5,7 +5,9 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Project464 {
@@ -90,11 +92,28 @@ public class Project464 {
                 }
             }
 
+            // Check if enough transitions for NFA
+            boolean notEnoughStates = false;
+            if(numStates * alphabet.length() == numTransition) {
+                notEnoughStates = true;
+                isDFA = false;
+                System.out.println("The automata contains less than transitions. \nIt is an NFA");
+            }
+
             if (isDFA) {
                 System.out.println("The automata does not have epsilon transitions or multiple transitions from a state for the same symbol. \nIt is a DFA.");
             } else {
                 // Convert from NFA to DFA
                 //      need new: startState, acceptStates, transitions
+
+                // Generate subsets
+                List<List<String>> subsets = generateSubsets(States);
+
+                // Output subsets
+                System.out.println("Subsets:");
+                for (List<String> subset : subsets) {
+                    System.out.println(subset);
+                }
 
             }
 
@@ -162,4 +181,19 @@ public class Project464 {
         return false;
     }
 
+    // Generate all subsets of an array of strings
+    private static List<List<String>> generateSubsets(String[] strings) {
+        List<List<String>> result = new ArrayList<>();
+        backtrack(result, new ArrayList<>(), strings, 0);
+        return result;
+    }
+
+    private static void backtrack(List<List<String>> result, List<String> tempList, String[] strings, int start) {
+        result.add(new ArrayList<>(tempList));
+        for (int i = start; i < strings.length; i++) {
+            tempList.add(strings[i]);
+            backtrack(result, tempList, strings, i + 1);
+            tempList.remove(tempList.size() - 1);
+        }
+    }
 }
