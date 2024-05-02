@@ -1,5 +1,8 @@
 // Group Partners: Nicholas Lubold, Charles Lombardo, Eugene Sosa
 
+// args[0] assumes a valid dfa or nfa input file, it will automatically determine which one it is
+// args[1] can be either a string or text file where each row corresponds to a string
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -9,16 +12,13 @@ public class Project464 {
 
     public static void main(String[] args) {
         Boolean result;
-        //int count = 0;
+        int count;
         boolean isDFA = true;
         try {
-            // First Step is to Parse the DFA Description
-            //Gets and opens File
             File DFADesc = new File(args[0]);
 
             Scanner Reader = new Scanner(DFADesc);
 
-            //Gets and stores Alphabet
             String alphabet = Reader.nextLine();
             String[] alphabetSet = alphabet.split("");
 
@@ -38,7 +38,6 @@ public class Project464 {
 
             for (int i = 0; i < numAcceptStates; i ++){
                 acceptStates[i] = Reader.nextLine();
-
             }
 
             int numTransition = Integer.parseInt(Reader.nextLine());
@@ -46,6 +45,11 @@ public class Project464 {
             String[][] transitions = new String[numTransition][3];
             for (int i = 0; i < numTransition; i ++){
                 transitions[i] = Reader.nextLine().split(",");
+            }
+            // Output all transitions to console
+            System.out.println("Transitions:");
+            for (String[] transition : transitions) {
+                System.out.println(Arrays.toString(transition));
             }
 //``````````````````````````````````````````````````````````````````
             // Check for Epsilon Transitions
@@ -59,16 +63,16 @@ public class Project464 {
 
             if (hasEpsilonTransition) {
                 isDFA = false;
-                System.out.println("The automaton contains epsilon transitions. It is an NFA.");
+                System.out.println("The automata contains epsilon transitions. \nIt is an NFA.");
             } else {
-                System.out.println("The automaton does not contain epsilon transitions.");
+                System.out.println("The automata does not contain epsilon transitions.");
             }
 
-            // Check for Multiple Transitions from a State for the Same Symbol
+            // Check for Multiple Transitions from a State for the same symbol
             boolean hasMultipleTransitions = false;
             for (String state : States) {
                 for (String symbol : alphabetSet) {
-                    int count = 0;
+                    count = 0;
                     for (String[] transition : transitions) {
                         if (transition[0].equals(state) && transition[2].equals(symbol)) {
                             count++;
@@ -77,7 +81,7 @@ public class Project464 {
                     if (count > 1) {
                         hasMultipleTransitions = true;
                         isDFA = false;
-                        System.out.println("The automaton contains multiple transitions from a state for the same symbol. It is an NFA.");
+                        System.out.println("The automata contains multiple transitions from a state for the same symbol. \nIt is an NFA.");
                         break;
                     }
                 }
@@ -87,7 +91,11 @@ public class Project464 {
             }
 
             if (isDFA) {
-                System.out.println("The automaton does not have epsilon transitions or multiple transitions from a state for the same symbol. It is a DFA.");
+                System.out.println("The automata does not have epsilon transitions or multiple transitions from a state for the same symbol. \nIt is a DFA.");
+            } else {
+                // Convert from NFA to DFA
+                //      need new: startState, acceptStates, transitions
+
             }
 
 //``````````````````````````````````````````````````````````````````
