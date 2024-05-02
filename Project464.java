@@ -5,10 +5,7 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Project464 {
 
@@ -92,12 +89,12 @@ public class Project464 {
                 }
             }
 
-            // Check if enough transitions for NFA
+            // Check if contains the right number of transitions for a DFA
             boolean notEnoughStates = false;
             if(numStates * alphabet.length() == numTransition) {
                 notEnoughStates = true;
                 isDFA = false;
-                System.out.println("The automata contains less than transitions. \nIt is an NFA");
+                System.out.println("The automata does not contain enough transitions. \nIt is an NFA");
             }
 
             if (isDFA) {
@@ -106,13 +103,54 @@ public class Project464 {
                 // Convert from NFA to DFA
                 //      need new: startState, acceptStates, transitions
 
+                // Initialize new data structures for DFA
+                List<List<String>> newStartStates = new ArrayList<>();
+                List<List<String>> newAcceptStates = new ArrayList<>();
+                List<String[]> newTransitions = new ArrayList<>();
+
                 // Generate subsets
                 List<List<String>> subsets = generateSubsets(States);
 
-                // Output subsets
-                System.out.println("Subsets:");
+                // Calculate new start states
+                List<String> initialStartState = Arrays.asList(startState);
                 for (List<String> subset : subsets) {
-                    System.out.println(subset);
+                    if (!Collections.disjoint(subset, initialStartState)) {
+                        newStartStates.add(subset);
+                    }
+                }
+
+                // Calculate new accept states
+                for (List<String> subset : subsets) {
+                    for (String acceptState : acceptStates) {
+                        if (subset.contains(acceptState)) {
+                            newAcceptStates.add(subset);
+                            break;
+                        }
+                    }
+                }
+
+                // Calculate new transitions
+                for (List<String> subset : subsets) {
+                    for (String symbol : alphabetSet) {
+                        List<String> nextState = calculateNextState(subset, symbol, transitions);
+                        if (!nextState.isEmpty()) {
+                            newTransitions.add(new String[]{subset.toString(), symbol, nextState.toString()});
+                        }
+                    }
+                }
+
+                // Output new start states, accept states, and transitions
+                System.out.println("New Start States:");
+                for (List<String> state : newStartStates) {
+                    System.out.println(state);
+                }
+                System.out.println("New Accept States:");
+                for (List<String> state : newAcceptStates) {
+                    System.out.println(state);
+                }
+                System.out.println("New Transitions:");
+                for (String[] transition : newTransitions) {
+                    System.out.println(Arrays.toString(transition));
                 }
 
             }
@@ -154,26 +192,32 @@ public class Project464 {
             e.printStackTrace();
         }
     }
+    
 
-    public static boolean DFAAccept(String[] alphabet, String pointer, String[] AcceptStates, String[][] transitions, String w){
+    public static boolean DFAAccept(String[] alphabet, String startState, String[] acceptStates, String[][] transitions, String w) {
+        String currentState = startState;
 
-        for (int i = 0; i < w.length(); i++){
-            //Checks if character is part of the alphabet, reject if not
-            if (!Arrays.asList(alphabet).contains(String.valueOf(w.charAt(i)))){
-                return false;
-            }
-            for (int j = 0; j < transitions.length; j++){
-                // go through each transition until the pointer state and input character match
-                if (pointer.equals(transitions[j][0]) && String.valueOf(w.charAt(i)).equals(transitions[j][2])) {
-                    pointer = transitions[j][1]; //once found set pointer state to the appropriate state
-                    break;  //continues to the next character
+        for (int i = 0; i < w.length(); i++) {
+            String symbol = String.valueOf(w.charAt(i));
+            boolean transitionFound = false;
+            // Check if the current state has a transition on the current input symbol
+            for (int j = 0; j < transitions.length; j++) {
+                if (currentState.equals(transitions[j][0]) && symbol.equals(transitions[j][2])) {
+                    // Once found, set the current state to the appropriate state
+                    currentState = transitions[j][1];
+                    transitionFound = true;
+                    break;
                 }
+            }
+            // If no transition is found, reject the input
+            if (!transitionFound) {
+                return false;
             }
         }
 
-        //when all characters in string have been processed check if any pointer states are an Accept State.
-        for (String accept : AcceptStates){
-            if (pointer.equals(accept)) {
+        // When all characters in the string have been processed, check if the current state is an accept state
+        for (String acceptState : acceptStates) {
+            if (currentState.equals(acceptState)) {
                 return true;
             }
         }
@@ -196,4 +240,35 @@ public class Project464 {
             tempList.remove(tempList.size() - 1);
         }
     }
+
+    private static List<String> calculateNextState(List<String> currentState, String symbol, String[][] transitions) {
+        List<String> nextState = new ArrayList<>();
+        for (String state : currentState) {
+            for (String[] transition : transitions) {
+                if (transition[0].equals(state) && transition[2].equals(symbol)) {
+                    // Add the destination state of the transition to the next state
+                    nextState.add(transition[1]);
+                }
+            }
+        }
+        // Perform ε-closure on the next state
+        nextState.addAll(epsilonClosure(nextState, transitions));
+        return nextState;
+    }
+
+
+    private static List<String> epsilonClosure(List<String> states, String[][] transitions) {
+        List<String> epsilonClosure = new ArrayList<>(states);
+        for (String state : states) {
+            for (String[] transition : transitions) {
+                if (transition[0].equals(state) && transition[2].equals("EPSILON")) {
+                    // Add the destination state of the ε-transition to the epsilon closure
+                    epsilonClosure.add(transition[1]);
+                }
+            }
+        }
+        return epsilonClosure;
+    }
+
+
 }
